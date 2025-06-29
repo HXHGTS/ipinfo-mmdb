@@ -1,0 +1,32 @@
+name: Update MMDB
+
+on:
+  schedule:
+    - cron: '0 10 * * *' # 每天运行一次
+  workflow_dispatch:
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Get file modification time
+        run: |
+          wget -O ipinfoLocal.mmdb "https://ipinfo.io/data/ipinfo_lite.mmdb?token=${{ secrets.API_TOKEN }}"
+
+      - name: Git Configuration
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Commit changes to main
+        run: |
+          git add ipinfoLocal.mmdb
+          git commit -m "Update MMDB with latest file modification time"
+          git push --force origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
